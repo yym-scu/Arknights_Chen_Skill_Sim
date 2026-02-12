@@ -9,6 +9,7 @@ import { useGameStore } from "@/store/useGameStore";
 // I'll fix the import in this content.
 
 import LoadingOverlay from "@/components/overlays/LoadingOverlay";
+import OrientationOverlay from "@/components/overlays/OrientationOverlay";
 
 import MobileLandscapeControls from "@/components/ui/MobileLandscapeControls";
 import MobileLandscapeTools from "@/components/ui/MobileLandscapeTools";
@@ -20,12 +21,25 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true);
+    
+    // Attempt to lock orientation to landscape if supported
+    if (typeof window !== 'undefined' && 'screen' in window && 'orientation' in window.screen) {
+      try {
+        // @ts-ignore - lock might not be available in all types or might fail
+        window.screen.orientation.lock('landscape').catch(() => {
+          // Ignore errors, usually fails if not in fullscreen
+        });
+      } catch (e) {
+        // Ignore errors
+      }
+    }
   }, []);
 
   if (!mounted) return null; // Avoid hydration mismatch on canvas/window checks
 
   return (
     <main className="flex flex-row h-dvh w-screen overflow-hidden bg-game-bg text-white">
+      <OrientationOverlay />
       {isLoading && <LoadingOverlay />}
       
       {/* Mobile Landscape Controls (Only visible below xl) */}

@@ -1,0 +1,17 @@
+{
+  "name": "赤刃明霄陈 战术模拟终端",
+  "short_name": "赤刃模拟",
+  "description": "明日方舟赤刃明霄陈技能模拟器",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#111111",
+  "theme_color": "#ffaa00",
+  "icons": [
+    {
+      "src": "assets/enemy.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    }
+  ]
+}
