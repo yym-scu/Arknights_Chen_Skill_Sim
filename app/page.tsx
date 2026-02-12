@@ -19,27 +19,45 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
   const { lastCombo, isLoading } = useGameStore();
 
+  const [isPortrait, setIsPortrait] = useState(false);
+
+  const toggleFullscreen = async () => {
+    try {
+      const element = document.documentElement;
+      if (!document.fullscreenElement) {
+        await element.requestFullscreen();
+        // 进入全屏后再次尝试锁定方向
+        if ('orientation' in window.screen && (window.screen.orientation as any).lock) {
+          await (window.screen.orientation as any).lock('landscape').catch(() => {});
+        }
+      }
+    } catch (e) {
+      console.error("Fullscreen/Locking failed", e);
+    }
+  };
+
   useEffect(() => {
     setMounted(true);
     
-    // Attempt to lock orientation to landscape if supported
-    if (typeof window !== 'undefined' && 'screen' in window && 'orientation' in window.screen) {
-      try {
-        // @ts-ignore - lock might not be available in all types or might fail
-        window.screen.orientation.lock('landscape').catch(() => {
-          // Ignore errors, usually fails if not in fullscreen
-        });
-      } catch (e) {
-        // Ignore errors
-      }
-    }
+    const checkOrientation = () => {
+      setIsPortrait(window.innerHeight > window.innerWidth);
+    };
+
+    checkOrientation();
+    window.addEventListener("resize", checkOrientation);
+    window.addEventListener("orientationchange", checkOrientation);
+
+    return () => {
+      window.removeEventListener("resize", checkOrientation);
+      window.removeEventListener("orientationchange", checkOrientation);
+    };
   }, []);
 
-  if (!mounted) return null; // Avoid hydration mismatch on canvas/window checks
+  if (!mounted) return null;
 
   return (
     <main className="flex flex-row h-dvh w-screen overflow-hidden bg-game-bg text-white">
-      <OrientationOverlay />
+      <OrientationOverlay isPortrait={isPortrait} onEnterFullscreen={toggleFullscreen} />
       {isLoading && <LoadingOverlay />}
       
       {/* Mobile Landscape Controls (Only visible below xl) */}
