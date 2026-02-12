@@ -69,12 +69,12 @@ export default function ResultsPanel() {
                         <div className={cn(
                             "font-black text-2xl font-sans tracking-tighter leading-none transition-all",
                             isSelected 
-                                ? "text-[#ffaa00] drop-shadow-[0_0_8px_rgba(255,170,0,0.6)] scale-110" 
+                                ? "text-game-accent-gold drop-shadow-[0_0_8px_rgba(255,170,0,0.6)] scale-110" 
                                 : "text-[#555] group-hover:text-[#888]"
                         )}>
                             {item.hits}
                         </div>
-                        <div className={cn("text-[8px] font-bold mt-0.5", isSelected ? "text-[#ffaa00]/60" : "text-[#444]")}>HITS</div>
+                        <div className={cn("text-[8px] font-bold mt-0.5", isSelected ? "text-game-accent-gold/60" : "text-[#444]")}>HITS</div>
                     </div>
                     
                     {/* Details */}

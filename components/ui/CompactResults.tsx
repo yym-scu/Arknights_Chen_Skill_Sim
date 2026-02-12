@@ -58,14 +58,14 @@ export default function CompactResults() {
             className={cn(
                 "bg-[#252525] rounded-md p-2 flex items-center justify-between border border-[#333] shadow-sm cursor-pointer transition-all active:scale-95 hover:bg-[#2d2d2d]",
                 // If selected, use Yellow border and lighter bg
-                isSelected ? "bg-[#3a332a] border-l-4 border-l-[#ffaa00]" : "border-l-4 border-l-transparent"
+                isSelected ? "bg-[#3a332a] border-l-4 border-l-game-accent-gold" : "border-l-4 border-l-transparent"
             )}
             >
                 {/* Hits */}
                 <div className="flex flex-col items-center min-w-[30px]">
                     <span className={cn(
                         "text-xl font-black italic leading-none",
-                        isSelected ? "text-[#ffaa00] drop-shadow-[0_0_5px_rgba(255,170,0,0.5)]" : "text-gray-400"
+                        isSelected ? "text-game-accent-gold drop-shadow-[0_0_5px_rgba(255,170,0,0.5)]" : "text-gray-400"
                     )}>
                         {c.hits}
                     </span>
@@ -75,7 +75,7 @@ export default function CompactResults() {
                 {/* Direction */}
                 <div className={cn(
                     "p-1 rounded text-gray-500",
-                    isSelected ? "bg-[#ffaa00]/10 text-[#ffaa00]" : "bg-[#1a1a1a]"
+                    isSelected ? "bg-game-accent-gold/10 text-game-accent-gold" : "bg-[#1a1a1a]"
                 )}>
                     <ArrowIcon dir={c.dir} />
                 </div>

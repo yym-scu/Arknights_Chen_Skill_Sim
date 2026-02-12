@@ -35,7 +35,7 @@ export default function MobileLandscapeTools() {
   };
 
   return (
-    <div className="flex items-center gap-2 px-3 bg-[#1c1c1c] border-b border-[#333] w-full max-w-full z-20 h-[48px] overflow-x-auto no-scrollbar flex-nowrap shadow-md">
+    <div className="flex items-center gap-2 px-3 bg-game-panel border-b border-[#333] w-full max-w-full z-20 h-[48px] overflow-x-auto no-scrollbar flex-nowrap shadow-md">
         <ToolButton t="wall" label="障碍" icon={BrickWall} themeColor="orange" />
         <ToolButton t="ban" label="禁区" icon={Ban} themeColor="gray" />
         <ToolButton t="path" label="路径" icon={Route} themeColor="blue" />

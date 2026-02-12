@@ -97,11 +97,11 @@ export default function Sidebar() {
                className={cn(
                  "flex flex-col items-center justify-center p-3 rounded-md border transition-all active:scale-95 group",
                  autoObsEnabled 
-                    ? "bg-[#2a2211] border-[#664400] text-[#ffaa00] shadow-[inset_0_0_10px_rgba(255,170,0,0.1)]" 
+                    ? "bg-[#2a2211] border-[#664400] text-game-accent-gold shadow-[inset_0_0_10px_rgba(255,170,0,0.1)]" 
                     : "bg-[#1e1e1e] border-[#333] text-gray-500 hover:bg-[#252525] hover:border-[#444]"
                )}
              >
-                <div className={cn("flex items-center gap-2 text-xs font-bold mb-1 transition-all", autoObsEnabled ? "text-[#ffaa00]" : "text-gray-500 group-hover:text-gray-300")}>
+                <div className={cn("flex items-center gap-2 text-xs font-bold mb-1 transition-all", autoObsEnabled ? "text-game-accent-gold" : "text-gray-500 group-hover:text-gray-300")}>
                     <span className="text-lg leading-none">✨</span>
                     <span>娜工之力: {autoObsEnabled ? "开" : "关"}</span>
                 </div>
