@@ -70,6 +70,7 @@ export default function MobileLandscapeControls() {
                         muted 
                         loop 
                         playsInline
+                        style={{ mixBlendMode: 'screen' }}
                         className={cn(
                             "w-full h-full object-contain transition-all duration-700 scale-[1.8]",
                             autoObsEnabled ? "opacity-100" : "opacity-40"

@@ -186,7 +186,11 @@ export class GameRenderer {
             const renderW = renderH * vRatio;
             const dx = sx + (gs - renderW) / 2;
             const dy = sy + gs - renderH + 25; // Adjusted offset
+            
+            this.ctx.save();
+            this.ctx.globalCompositeOperation = "screen";
             this.ctx.drawImage(this.assets.chen, dx, dy, renderW, renderH);
+            this.ctx.restore();
         } else {
             this.ctx.fillStyle = "#0cf";
             this.ctx.textAlign = "center";
