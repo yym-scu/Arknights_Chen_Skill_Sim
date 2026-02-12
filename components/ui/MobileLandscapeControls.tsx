@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { BrickWall, Ban, Skull, Route, Play, Trash2, RotateCcw, Sparkles, Save, FilePlus, RefreshCw, Hand, ChevronRight, X } from "lucide-react";
 import { ToolType } from "@/lib/game/types";
 import { useState, useRef, useEffect } from "react";
+import CanvasVideo from "./CanvasVideo";
 import SaveManager from "./SaveManager";
 
 export default function MobileLandscapeControls() {
@@ -22,17 +23,6 @@ export default function MobileLandscapeControls() {
   } = useGameStore();
 
   const [saveMenuOpen, setSaveMenuOpen] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    if (videoRef.current) {
-        if (autoObsEnabled) {
-            videoRef.current.play().catch(() => {});
-        } else {
-            videoRef.current.pause();
-        }
-    }
-  }, [autoObsEnabled]);
 
   return (
     <div className="flex flex-col bg-game-panel border-r border-[#333] h-full w-[70px] z-50 pt-0 xl:hidden">
@@ -63,21 +53,16 @@ export default function MobileLandscapeControls() {
                  onClick={toggleAutoObs}
                  className="group relative flex flex-col items-center justify-center h-16 w-full flex-none overflow-hidden active:scale-95 transition-all outline-none border-none bg-transparent"
             >
-                {/* Video Background - ONLY THE CHARACTER */}
-                <div className="absolute inset-0 z-0 flex items-center justify-center">
-                    <video 
-                        ref={videoRef}
-                        muted 
-                        loop 
-                        playsInline
-                        style={{ mixBlendMode: 'screen' }}
+                {/* Canvas Background - FORCING TRANSPARENCY VIA BLENDING */}
+                <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
+                    <CanvasVideo 
+                        src="/assets/nasty_skill.webm" 
+                        isPlaying={autoObsEnabled}
                         className={cn(
                             "w-full h-full object-contain transition-all duration-700 scale-[1.8]",
                             autoObsEnabled ? "opacity-100" : "opacity-40"
                         )}
-                    >
-                        <source src="/assets/nasty_skill.webm" type="video/webm" />
-                    </video>
+                    />
                 </div>
             </button>
 
