@@ -14,25 +14,25 @@ export default function CanvasVideo({ src, isPlaying, className }: CanvasVideoPr
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const rafRef = useRef<number | null>(null);
 
+    // Browser detection: Standard Chrome usually handles WebM transparency well
+    const isStandardChrome = typeof navigator !== 'undefined' && 
+        /Chrome/.test(navigator.userAgent) && 
+        !/Quark|UCBrowser|QQBrowser|MicroMessenger/.test(navigator.userAgent);
+
     useEffect(() => {
+        if (isStandardChrome) return;
+
         const video = document.createElement("video");
         video.src = src;
         video.muted = true;
         video.loop = true;
         video.playsInline = true;
         video.autoplay = false; 
-        video.crossOrigin = "anonymous"; // Good practice for canvas
-        
-        // Critical Fix for Quark/UC Hijacking:
-        // Do NOT append the video to the DOM. Keeping it in memory prevents
-        // the browser's native player from detecting and hijacking it.
-        // We rely on programmatically calling .play() on the memory object.
+        video.crossOrigin = "anonymous";
         videoRef.current = video;
 
         const canvas = canvasRef.current;
         if (!canvas) return;
-        
-        // willReadFrequently is crucial for performance when using getImageData
         const ctx = canvas.getContext("2d", { willReadFrequently: true });
         if (!ctx) return;
 
@@ -40,34 +40,15 @@ export default function CanvasVideo({ src, isPlaying, className }: CanvasVideoPr
             if (video.readyState >= 2) {
                 const vw = video.videoWidth;
                 const vh = video.videoHeight;
-                
                 if (canvas.width !== vw || canvas.height !== vh) {
                     canvas.width = vw;
                     canvas.height = vh;
                 }
-
-                // 1. Draw raw video frame
                 ctx.drawImage(video, 0, 0);
-
-                // 2. Advanced Luma Keying (Black Removal)
-                // This removes the black background physically, fixing the "Gray Box" 
-                // issue in Chrome and the "Black Box" issue in other browsers.
                 const imageData = ctx.getImageData(0, 0, vw, vh);
                 const data = imageData.data;
-                
                 for (let i = 0; i < data.length; i += 4) {
-                    const r = data[i];
-                    const g = data[i+1];
-                    const b = data[i+2];
-                    
-                    // Simple average brightness
-                    const brightness = (r + g + b) / 3;
-
-                    // Thresholds:
-                    // < 55: Pure background/artifacts -> Transparent
-                    // 55 - 80: Edge anti-aliasing -> Semi-transparent
-                    // > 80: Content -> Opaque
-                    
+                    const r = data[i], g = data[i+1], b = data[i+2];
                     const maxVal = Math.max(r, g, b);
                     if (maxVal < 65) {
                         data[i + 3] = 0;
@@ -76,35 +57,45 @@ export default function CanvasVideo({ src, isPlaying, className }: CanvasVideoPr
                         data[i + 3] = Math.min(data[i + 3], alpha);
                     }
                 }
-                
-                // 3. Write back
                 ctx.putImageData(imageData, 0, 0);
             }
             rafRef.current = requestAnimationFrame(render);
         };
-
         rafRef.current = requestAnimationFrame(render);
 
         return () => {
             video.pause();
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
-            // No need to remove from body since we didn't append it
             videoRef.current = null;
         };
-    }, [src]);
+    }, [src, isStandardChrome]);
 
     useEffect(() => {
-        const video = videoRef.current;
+        const video = videoRef.current || (isStandardChrome ? document.getElementById(`native-video-${src.replace(/[^a-zA-Z0-9]/g, '')}`) as HTMLVideoElement : null);
         if (!video) return;
         if (isPlaying) {
-            video.play().catch(() => {
-                // Autoplay/Play might fail without user interaction context
-                // But usually mute+playsInline works.
-            });
+            video.play().catch(() => {});
         } else {
             video.pause();
         }
-    }, [isPlaying]);
+    }, [isPlaying, isStandardChrome, src]);
+
+    if (isStandardChrome) {
+        return (
+            <video
+                id={`native-video-${src.replace(/[^a-zA-Z0-9]/g, '')}`}
+                src={src}
+                muted
+                loop
+                playsInline
+                className={cn("pointer-events-none block object-contain", className)}
+                // Chrome handles WebM alpha natively, so we just use standard video.
+                // If the user still sees a black box, it might be the video encoding itself.
+                // We add mixBlendMode as a double-safety for Chrome.
+                style={{ mixBlendMode: 'screen' }}
+            />
+        );
+    }
 
     return (
         <canvas 
