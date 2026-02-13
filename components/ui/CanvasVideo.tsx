@@ -21,15 +21,18 @@ export default function CanvasVideo({ src, isPlaying, className }: CanvasVideoPr
         video.loop = true;
         video.playsInline = true;
         video.autoplay = false; 
-        video.setAttribute('webkit-playsinline', 'true');
-        video.setAttribute('x5-video-player-type', 'h5-page');
+        video.crossOrigin = "anonymous"; // Good practice for canvas
         
-        video.style.display = 'none';
-        document.body.appendChild(video);
+        // Critical Fix for Quark/UC Hijacking:
+        // Do NOT append the video to the DOM. Keeping it in memory prevents
+        // the browser's native player from detecting and hijacking it.
+        // We rely on programmatically calling .play() on the memory object.
         videoRef.current = video;
 
         const canvas = canvasRef.current;
         if (!canvas) return;
+        
+        // willReadFrequently is crucial for performance when using getImageData
         const ctx = canvas.getContext("2d", { willReadFrequently: true });
         if (!ctx) return;
 
@@ -43,11 +46,12 @@ export default function CanvasVideo({ src, isPlaying, className }: CanvasVideoPr
                     canvas.height = vh;
                 }
 
-                // 1. 先把原视频画上去
+                // 1. Draw raw video frame
                 ctx.drawImage(video, 0, 0);
 
-                // 2. 像素级扣除非透明背景 (Luma Key)
-                // 夸克不支持 Alpha 视频，我们就手动把黑色变透明
+                // 2. Advanced Luma Keying (Black Removal)
+                // This removes the black background physically, fixing the "Gray Box" 
+                // issue in Chrome and the "Black Box" issue in other browsers.
                 const imageData = ctx.getImageData(0, 0, vw, vh);
                 const data = imageData.data;
                 
@@ -56,13 +60,24 @@ export default function CanvasVideo({ src, isPlaying, className }: CanvasVideoPr
                     const g = data[i+1];
                     const b = data[i+2];
                     
-                    // 如果颜色非常接近黑色 (阈值设为 25，可根据效果微调)
-                    if (r < 25 && g < 25 && b < 25) {
-                        data[i + 3] = 0; // 设置透明度为0
+                    // Simple average brightness
+                    const brightness = (r + g + b) / 3;
+
+                    // Thresholds:
+                    // < 45: Pure background/artifacts -> Transparent
+                    // 45 - 65: Edge anti-aliasing -> Semi-transparent
+                    // > 65: Content -> Opaque
+                    
+                    if (brightness < 45) {
+                        data[i + 3] = 0; // Fully transparent
+                    } else if (brightness < 65) {
+                        // Smooth fade out for edges to prevent jagged look
+                        const alpha = ((brightness - 45) / 20) * 255;
+                        data[i + 3] = Math.min(data[i + 3], alpha);
                     }
                 }
                 
-                // 3. 将处理后的像素写回
+                // 3. Write back
                 ctx.putImageData(imageData, 0, 0);
             }
             rafRef.current = requestAnimationFrame(render);
@@ -73,7 +88,7 @@ export default function CanvasVideo({ src, isPlaying, className }: CanvasVideoPr
         return () => {
             video.pause();
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
-            if (document.body.contains(video)) document.body.removeChild(video);
+            // No need to remove from body since we didn't append it
             videoRef.current = null;
         };
     }, [src]);
@@ -82,7 +97,10 @@ export default function CanvasVideo({ src, isPlaying, className }: CanvasVideoPr
         const video = videoRef.current;
         if (!video) return;
         if (isPlaying) {
-            video.play().catch(() => {});
+            video.play().catch(() => {
+                // Autoplay/Play might fail without user interaction context
+                // But usually mute+playsInline works.
+            });
         } else {
             video.pause();
         }
