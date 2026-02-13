@@ -15,63 +15,80 @@ export default function CanvasVideo({ src, isPlaying, className }: CanvasVideoPr
     const rafRef = useRef<number | null>(null);
 
     useEffect(() => {
+        // Create video element
         const video = document.createElement("video");
         video.src = src;
         video.muted = true;
         video.loop = true;
         video.playsInline = true;
+        video.autoplay = false; 
+        video.setAttribute('webkit-playsinline', 'true');
+        video.setAttribute('x5-video-player-type', 'h5-page'); // Help with Chinese browsers like Quark/UC
+        
+        // Essential: Keep a reference but don't necessarily add to DOM if not needed,
+        // however some browsers need it in DOM. Let's add it hidden.
+        video.style.display = 'none';
+        document.body.appendChild(video);
         videoRef.current = video;
 
         const canvas = canvasRef.current;
         if (!canvas) return;
-        const ctx = canvas.getContext("2d", { alpha: true });
+        const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
         const render = () => {
             if (video.readyState >= 2) {
-                // Ensure canvas size matches video or container
                 if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
                 }
 
+                // Clear perfectly
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
-                // Use screen blending to remove black background for Quark-like browsers
-                ctx.save();
-                ctx.globalCompositeOperation = "screen";
+                // We draw NORMALLY here. 
+                // The "Screen" blending will be handled by CSS on the canvas element itself
+                // to avoid hijacking and to ensure it blends with the parent background.
                 ctx.drawImage(video, 0, 0);
-                ctx.restore();
             }
             rafRef.current = requestAnimationFrame(render);
         };
 
-        if (isPlaying) {
-            video.play().catch(() => {});
-            rafRef.current = requestAnimationFrame(render);
-        }
+        rafRef.current = requestAnimationFrame(render);
 
         return () => {
             video.pause();
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
+            if (document.body.contains(video)) document.body.removeChild(video);
             videoRef.current = null;
         };
-    }, [src, isPlaying]);
+    }, [src]);
 
-    // Handle play/pause toggle
+    // Robust play/pause logic
     useEffect(() => {
-        if (!videoRef.current) return;
+        const video = videoRef.current;
+        if (!video) return;
+
         if (isPlaying) {
-            videoRef.current.play().catch(() => {});
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log("Autoplay prevented:", error);
+                    // Most mobile browsers need a direct touch event to start.
+                });
+            }
         } else {
-            videoRef.current.pause();
+            video.pause();
         }
     }, [isPlaying]);
 
     return (
         <canvas 
             ref={canvasRef} 
-            className={cn("pointer-events-none", className)}
+            // Apply mix-blend-mode via CSS to the canvas itself. 
+            // This filters out the black background during the browser's composite phase.
+            style={{ mixBlendMode: 'screen' }}
+            className={cn("pointer-events-none block", className)}
         />
     );
 }
