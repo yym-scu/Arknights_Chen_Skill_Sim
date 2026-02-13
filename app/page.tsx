@@ -56,7 +56,7 @@ export default function Home() {
   if (!mounted) return null;
 
   return (
-    <main className="flex flex-row h-dvh w-screen overflow-hidden bg-game-bg text-white">
+    <main className="flex flex-row h-full w-screen overflow-hidden bg-game-bg text-white">
       <OrientationOverlay isPortrait={isPortrait} onEnterFullscreen={toggleFullscreen} />
       {isLoading && <LoadingOverlay />}
       

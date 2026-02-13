@@ -64,15 +64,15 @@ export default function CanvasVideo({ src, isPlaying, className }: CanvasVideoPr
                     const brightness = (r + g + b) / 3;
 
                     // Thresholds:
-                    // < 45: Pure background/artifacts -> Transparent
-                    // 45 - 65: Edge anti-aliasing -> Semi-transparent
-                    // > 65: Content -> Opaque
+                    // < 55: Pure background/artifacts -> Transparent
+                    // 55 - 80: Edge anti-aliasing -> Semi-transparent
+                    // > 80: Content -> Opaque
                     
-                    if (brightness < 45) {
-                        data[i + 3] = 0; // Fully transparent
-                    } else if (brightness < 65) {
-                        // Smooth fade out for edges to prevent jagged look
-                        const alpha = ((brightness - 45) / 20) * 255;
+                    const maxVal = Math.max(r, g, b);
+                    if (maxVal < 65) {
+                        data[i + 3] = 0;
+                    } else if (maxVal < 95) {
+                        const alpha = ((maxVal - 65) / 30) * 255;
                         data[i + 3] = Math.min(data[i + 3], alpha);
                     }
                 }

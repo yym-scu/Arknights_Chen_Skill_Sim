@@ -9,6 +9,14 @@ export const metadata: Metadata = {
     title: "赤刃模拟",
     statusBarStyle: "black-translucent",
   },
+  other: {
+    "mobile-web-app-capable": "yes",
+    "apple-touch-fullscreen": "yes",
+    "full-screen": "yes",
+    "browsermode": "application",
+    "x5-fullscreen": "true",
+    "x5-page-mode": "app",
+  } as any,
 };
 
 export const viewport = {

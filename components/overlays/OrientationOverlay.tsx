@@ -40,7 +40,7 @@ export default function OrientationOverlay({ isPortrait, onEnterFullscreen }: Or
                 建议横屏浏览
             </h2>
             <p className="text-gray-400 text-xs leading-relaxed max-w-[260px] mb-8">
-                为了获得最佳的演算体验，请点击全屏并将您的移动设备旋转至横向模式。
+                为了获得最佳的演算体验，请关闭方向锁定后将您的移动设备旋转至横向并点击全屏使用。
             </p>
 
             <button 
